@@ -279,7 +279,7 @@ void InitSystem()
 	EA = 1;
 
 	// 初始化收音机
-	Delay(300); // 等待收音机芯片上的稳定后再初始化
+	Delay(300); // 等待收音机芯片上电稳定后再初始化
 	RDA5807M_init();
 
 	LED_RESET_SLEEP_TIME();
