@@ -1,7 +1,7 @@
 #ifndef _RDA5807M_H_
 #define _RDA5807M_H_
 
-#include "config/Config.h"
+#include "../config/Config.h"
 
 #define BAND_87_108 1
 #define BAND_76_91 2
@@ -58,29 +58,17 @@ uint8t RDA5807M_Radio_TRUE(void);
 void RDA5807M_Search_Automatic(void);
 
 /**
- * 设置音量大小
- * @param 1-15
+ * @brief 设置音量/解除静音 解除静音时不调整音量
+ * @param Val:音量值(0-15)
+ * @return 无
  */
 void RDA5807M_Set_Volume(uint8t vol);
 
 /**
- * @brief 设置静音
- * @param Bool：0是静音，1是解除静音
- * @return 无
+ * 打开静音模式
  */
-void RDA5807M_SetMUTE(uint8t mute);
+void RDA5807M_SET_MUTE();
 
-/**
- * 静音模式和非静音模式来回切换，静音不持久化
- */
-void RDA5807M_CHANGE_MUTE();
-
-/**
- * @brief 设置静音
- * @param mute：1是静音，0是解除静音
- * @return 无
- */
-uint8t RDA5807M_SetMutea_status();
 
 /**
  * 读取RSSI

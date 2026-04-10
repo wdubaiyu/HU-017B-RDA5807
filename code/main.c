@@ -24,8 +24,7 @@ bit rssi_read_flag;
 void triggerWriteFreq()
 {
 	sys_write_freq_flag = 1;
-	CONF_WRITE();
-	conf_write_flag = 0;
+	conf_write_flag = 1;
 }
 
 // 按键触发功能
@@ -62,7 +61,7 @@ void userInput(uint8t Key_num)
 		}
 
 		// 触发功能后按了V-
-		if (key_function_flag > 10 && Key_num == 2)
+		if (Key_num == 2)
 		{
 			if (key_function_flag == 11)
 			{
@@ -87,11 +86,12 @@ void userInput(uint8t Key_num)
 		}
 
 		// 触发功能后按了F+  (取消)
-		if (key_function_flag > 10 && Key_num == 3)
+		if (Key_num == 3)
 		{
-			if (key_function_flag == 11)
-			{
-			}
+//		    自动收台不需要调整
+//			if (key_function_flag == 11)
+//			{
+//			}
 
 			if (key_function_flag == 21)
 			{
@@ -105,7 +105,7 @@ void userInput(uint8t Key_num)
 		}
 
 		// 触发功能后按了F- （确认）
-		if (key_function_flag > 10 && Key_num == 4)
+		if (Key_num == 4)
 		{
 			if (key_function_flag == 11)
 			{
@@ -138,7 +138,7 @@ void userInput(uint8t Key_num)
 		return;
 	}
 
-	///////////////////////////////////////////////////////////////功能出发区域///////////////////
+	////////////////////功能触发区///////////////////
 	// K12 设置省电模式（一定时间后关闭数码管）
 	if (Key_num == 12)
 	{
@@ -175,9 +175,7 @@ void userInput(uint8t Key_num)
 		return;
 	}
 
-	///////////////////////////////////////////////////////////////功能出发区域///////////////////
-
-	//////////////////////////////////////////////////////////////常用操作区域
+	/////////////////常用操作区域
 	// K33 手动搜下一个台
 	if (Key_num == 33)
 	{
@@ -196,7 +194,7 @@ void userInput(uint8t Key_num)
 	if (Key_num == 22)
 	{
 		LED_SET_DISPLY_TYPE(4); // 数码管显示音量
-		RDA5807M_CHANGE_MUTE();
+		RDA5807M_SET_MUTE();
 		return;
 	}
 
@@ -205,7 +203,7 @@ void userInput(uint8t Key_num)
 	{
 		LED_SET_DISPLY_TYPE(4); // 数码管显示音量
 		// 最大音量15
-		if (sys_vol + 1 < 16)
+		if (sys_vol < 15)
 		{
 			RDA5807M_Set_Volume(sys_vol + 1);
 		}
