@@ -1,8 +1,6 @@
 #ifndef _CONFIG_5807M_
 #define _CONFIG_5807M_
 
-#define ERROR 0
-#define OK 1
 
 sbit W1 = P1 ^ 0;
 sbit W2 = P1 ^ 1;

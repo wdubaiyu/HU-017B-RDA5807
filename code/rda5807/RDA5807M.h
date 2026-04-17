@@ -39,6 +39,7 @@ uint8t RDA5807M_Read_SNR(void);
 
 void RDA5807M_Set_SNR(uint8t snr);
 
+uint16t SEEK(uint8t direction, bit round);
 /**
  * @brief 手动搜索电台（搜索完成后会设置当前频率为搜到的频率）
  * @param direction 搜索方向（1 频率增加 0 频率减）
@@ -50,7 +51,7 @@ uint16t RDA5807M_Seek(uint8t direction);
  * @brief 点前是否是电台
  * @return 1 = 是   0 = 否
  */
-uint8t RDA5807M_Radio_TRUE(void);
+bit RDA5807M_Radio_TRUE(void);
 
 /**
  * 搜索全部电台

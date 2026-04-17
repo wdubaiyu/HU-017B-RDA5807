@@ -7,15 +7,16 @@
 #include "led/myLed.h"
 
 
-// 静音标记 0 = Mute; 1 = Normal operation
-bit MUTE_STATUS = 1;
-
 // 频段参数结构体
 typedef struct {
   uint16t Start;
   uint16t End;
   uint16t Space;
 } FreqBand;
+
+// 静音标记 0 = Mute; 1 = Normal operation
+bit MUTE_STATUS = 1;
+FreqBand _band = {0, 0, 0};
 
 /**
  * 写寄存器 16bit
@@ -58,58 +59,57 @@ uint16t RDA5807M_Read_Reg(uint8t Address) {
  * @return FreqBand 频段参数结构体
  */
 FreqBand RDA5807M_GetBandParams(void) {
-  FreqBand band;
   uint16t band_sel;
   uint16t space_sel;
-
-  band.Start = 0;
-  band.End = 0;
-  band.Space = 0;
+  // 获取缓存值。这个值一般不会修改（现在没有修改功能）
+  if (_band.Space > 0 || _band.Start > 0 || _band.End > 0) {
+    return _band;
+  }
 
   band_sel = (RDA5807M_Read_Reg(0x03) & 0x000C) >> 2;
   space_sel = RDA5807M_Read_Reg(0x03) & 0x0003;
 
   switch (band_sel) {
-    case 0:
-      band.Start = 8700;
-      band.End = 10800;
-      break; // 87-108 MHz
-    case 1:
-      band.Start = 7600;
-      band.End = 9100;
-      break; // 76-91 MHz (Japan)
-    case 2:
-      band.Start = 7600;
-      band.End = 10800;
-      break; // 76-108 MHz
-    case 3:                                              // 65-76 or 50-76 MHz
-      if ((RDA5807M_Read_Reg(0x07) >> 9) & 0x01) {
-        band.Start = 6500;
-        band.End = 7600;
-      } else {
-        band.Start = 5000;
-        band.End = 7600;
-      }
-      break;
-    default:
-      return band;
+  case 0:
+    _band.Start = 8700;
+    _band.End = 10800;
+    break; // 87-108 MHz
+  case 1:
+    _band.Start = 7600;
+    _band.End = 9100;
+    break; // 76-91 MHz (Japan)
+  case 2:
+    _band.Start = 7600;
+    _band.End = 10800;
+    break; // 76-108 MHz
+  case 3:  // 65-76 or 50-76 MHz
+    if ((RDA5807M_Read_Reg(0x07) >> 9) & 0x01) {
+      _band.Start = 6500;
+      _band.End = 7600;
+    } else {
+      _band.Start = 5000;
+      _band.End = 7600;
+    }
+    break;
+  default:
+    return _band;
   }
 
   switch (space_sel) {
-    case 0:
-      band.Space = 10;
-      break;
-    case 1:
-      band.Space = 20;
-      break;
-    case 2:
-      band.Space = 5;
-      break;
-    case 3:
-      band.Space = 2;
-      break; // 仅RDA5807SP支持
+  case 0:
+    _band.Space = 10;
+    break;
+  case 1:
+    _band.Space = 20;
+    break;
+  case 2:
+    _band.Space = 5;
+    break;
+  case 3:
+    _band.Space = 2;
+    break; // 仅RDA5807SP支持
   }
-  return band;
+  return _band;
 }
 
 /**
@@ -123,8 +123,7 @@ void RDA5807M_init(void) {
   Delay(50);
   RDA5807M_Write_Reg(
       0x03,
-      0x0010 | ((sys_freq - 8700) / 10)
-                   << 6); // 0x0010(TUNE BAND00 SPACE00)--> 87–108 MHz
+      0x0012 | ((sys_freq - 8700) / 10)<< 6); // 0x0010(TUNE BAND00 SPACE00)--> 87–108 MHz
                           // (US/Europe) SPACE 100 kHz  设置ch对应sys_freqMHz
   RDA5807M_Write_Reg(0x05, 0x86a0 | sys_vol); // seek SNR 0110  --> 6
   RDA5807M_Write_Reg(0x06, 0x0000);
@@ -140,7 +139,7 @@ void RDA5807M_init(void) {
 uint16t RDA5807M_FreqToChan(uint16t Freq) {
   FreqBand band;
   band = RDA5807M_GetBandParams();
-  if (band.Start == 0 && band.End == 0)
+  if (band.Space == 0 || band.Start == 0 || band.End == 0)
     return 0;
   if (Freq < band.Start || Freq > band.End)
     return 0;
@@ -156,12 +155,21 @@ uint16t RDA5807M_ChanToFreq(uint16t Chan) {
   FreqBand band;
   uint16t freq;
   band = RDA5807M_GetBandParams();
-  if (band.Start == 0 && band.End == 0)
+  if (band.Space == 0 || band.Start == 0 || band.End == 0)
     return 0;
   freq = band.Start + Chan * band.Space;
   if (freq > band.End || freq < band.Start)
     return 0;
   return freq;
+}
+
+/**
+ * @brief 读取当前chan
+ *  0A[9:0] READCHAN
+ * @return chan
+ */
+uint16t RDA5807M_Read_Chan(void){
+  return RDA5807M_Read_Reg(0x0A) & 0x03FF;
 }
 /**
  * @brief 读取当前频率
@@ -169,9 +177,7 @@ uint16t RDA5807M_ChanToFreq(uint16t Chan) {
  * @return 频率(以MHz为单位*100)(如108MHz=>10800)
  */
 uint16t RDA5807M_Read_Freq(void) {
-  uint16t chan = 0;
-  chan = RDA5807M_Read_Reg(0x0A) & 0x03FF;
-  return RDA5807M_ChanToFreq(chan);
+  return RDA5807M_ChanToFreq(RDA5807M_Read_Chan());
 }
 /**
  * @brief 设置频率值
@@ -182,23 +188,23 @@ uint16t RDA5807M_Read_Freq(void) {
  */
 void RDA5807M_Set_Freq(uint16t Freq) {
   uint16t chan = RDA5807M_FreqToChan(Freq); // 先转化为信道值
-  uint16t band = RDA5807M_Read_Reg(0x03);
-  band &= 0x003F;               // 清空信道值
-  band |= (chan & 0x03FF) << 6; // 写入信道值
-  band |= 1 << 4;               // 调频启用
-  RDA5807M_Write_Reg(0x03, band);
+  uint16t h03 = RDA5807M_Read_Reg(0x03);
+  h03 &= 0x003F;               // 清空信道值
+  h03 |= (chan & 0x03FF) << 6; // 写入信道值
+  h03 |= 1 << 4;               // 调频启用
+  RDA5807M_Write_Reg(0x03, h03);
 
   // 等待调谐完成
   while (!(RDA5807M_Read_Reg(0x0A) & (1 << 14)))
     ; // STC=1
 
   // The tune bit is reset to low automatically when the tune operation
-  // completes.. RDA5807M_Write_Reg(0x03, band & ~(1 << 4));
+  // completes.. RDA5807M_Write_Reg(0x03, h03 & ~(1 << 4));
   LED_SET_DISPLY_TYPE(10);
 }
 
 /**
- * 查询seek的snr阈值
+ * 查询snr阈值
  */
 uint8t RDA5807M_Read_SNR(void) {
   // 8~11 位  0~15 系统默认6
@@ -226,7 +232,7 @@ void RDA5807M_Set_SNR(uint8t snr) {
  * @param round 是否环绕搜台
  * @return 电台频率
  */
-uint16t seek(uint8t direction, bit round) {
+uint16t SEEK(uint8t direction, bit round) {
   uint16t temp_reg;
   uint16t freq;
   uint16t timeout = 0;
@@ -242,6 +248,8 @@ uint16t seek(uint8t direction, bit round) {
   }
 
   temp_reg |= 1 << 8; // 开启搜索
+
+  
   if (round) {
     temp_reg &= ~(1 << 7); // 环绕搜索
   } else {
@@ -250,7 +258,7 @@ uint16t seek(uint8t direction, bit round) {
 
   RDA5807M_Write_Reg(0x02, temp_reg);
   // 添加超时保护，避免死循环
-  while (!(RDA5807M_Read_Reg(0x0A) & (1 << 14))) {
+  while (!(RDA5807M_Read_Reg(0x0A) & (1 << 14))) { // 0AH STC判断
     Delay(10);
     if (++timeout > 200) { // 超时约2秒
       break;
@@ -270,19 +278,19 @@ uint16t seek(uint8t direction, bit round) {
  */
 uint16t RDA5807M_Seek(uint8t direction) {
   LED_SEEK_D = direction;
-  return seek(direction, 1);
+  return SEEK(direction, 1);
 }
 
 /**
  * @brief当前频率是否是电台
  * @return 1 = 是   0 = 否
  */
-uint8t RDA5807M_Radio_TRUE() {
+bit RDA5807M_Radio_TRUE() {
   uint16t isRadio;
   isRadio = RDA5807M_Read_Reg(0x0B);
   isRadio >>= 8;
   isRadio &= 1;
-  return isRadio;
+  return isRadio &= 1;
 }
 
 /**
@@ -290,44 +298,22 @@ uint8t RDA5807M_Radio_TRUE() {
  */
 void RDA5807M_Search_Automatic() {
   uint16t i = 0; // 电台索引
-  uint16t band = 0;
-  uint16t Start, End;
-  band = (RDA5807M_Read_Reg(0x03) & 0x000C) >> 2; // 0x03的3，2位（band）
-
-  if (band == 0 /*0b00*/) {
-    Start = 8700;
-    End = 10800;
-  } else if (band == 1 /*0b01*/) {
-    Start = 7600;
-    End = 9100;
-  } else if (band == 2 /*0b10*/) {
-    Start = 7600;
-    End = 10800;
-  } else if (band == 3 /*0b11*/) {
-    if ((RDA5807M_Read_Reg(0x07) >> 9) & 0x01) {
-      Start = 6500;
-      End = 7600;
-    } else {
-      Start = 5000;
-      End = 7600;
-    }
-  } else { // 没有匹配到band
-    return;
-  }
+  FreqBand band;
+  band = RDA5807M_GetBandParams();
   // 控制数码管显示
-  sys_freq = LED_FRE_REAL = Start;
+  sys_freq = LED_FRE_REAL = band.Start;
   LED_SEEK_D = 1;
   LED_SET_DISPLY_TYPE(10);
   // 调整搜索开始频点
-  RDA5807M_Set_Freq(Start);
+  RDA5807M_Set_Freq(band.Start);
   Delay(50);
 
   // 清空eeprom中的电台数据
   CONF_RADIO_ERASE();
   // 开始搜索
-  while (sys_freq != End) {
+  while (sys_freq != band.End) {
     // 向下搜台 ，边界终止
-    sys_freq = seek(1, 0);
+    sys_freq = SEEK(1, 0);
     Delay(500); // 延迟等待系统判断电台
     if (RDA5807M_Radio_TRUE()) {
       // 保存电台
