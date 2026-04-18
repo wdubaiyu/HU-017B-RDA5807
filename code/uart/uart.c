@@ -21,7 +21,7 @@ void Uart_SendChar(unsigned char dat)
 	TI = 0;
 }
 
-char putchar(char c) // 重定�?
+char putchar(char c) // 
 {
 	Uart_SendChar(c);
 	return c;

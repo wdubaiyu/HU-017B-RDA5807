@@ -14,8 +14,6 @@
  */
 // 存放音量（0-15 uint8_t占用1字节）0x0000
 #define addr_vol 0x0000
-// 存放当前频率 （uint16_t占用2字节）0x0001 ~ 0x0002
-#define addr_freq 0x0001
 // 存放当前index （uint8_t占用1字节） 0x0003
 #define addr_freq_index 0x0003
 // 存放睡眠模式 （1bit 占用 uint8_t占用1字节）
@@ -23,8 +21,10 @@
 // 存放POLL模式 （1bit 占用 uint8_t占用1字节）
 #define addr_poll_mode 0x0005
 
-// 存放电台最大数量
+// 存放电台最大数量（0~254）
 #define addr_radio 0x0600
+// 存放SPACE BAND  (uint8_t占用1字节SPACE 低2位，BAND 高6位)
+#define addr_h03 0x0601
 // 存放电台频率开始（两个byte一个台）
 #define addr_radio_list 0x0602
 

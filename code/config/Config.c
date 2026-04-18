@@ -1,12 +1,15 @@
-#include <STC8G.H>
-#include <stdio.h>
-#include "Delay.h"
-#include "Config.h"
-#include "EEPROM.h"
+#include "STC8G.H"
 
+#include "Config.h"
+#include "Delay.h"
+#include "EEPROM.H"
+#include "EEPROM.h"
+#include "stdio.h"
+
+uint8_t sys_band = 0x00;
 uint8_t sys_vol = 0x05;
 // 0一段时间后休眠 1一直显示
-bit sys_sleep_mode;
+bit sys_sleep_mode = 0;
 // 轮询展示freq 和 rssi 开关
 bit cycle_in_freq_rssi = 0;
 uint16_t sys_freq = 0x21FC; // 8700
@@ -22,131 +25,139 @@ bit config_write = 0;
  * 从EEPROM中读取存储的电台频率
  * @param EEPROM地址
  */
-uint16_t CONF_READ_RAIDO_FREQ(uint16_t addr)
-{
-    uint8_t freq_array_read[2] = {0x00};
-    IapReadArrayByte(addr, freq_array_read);
-    return ((uint16_t)freq_array_read[0]) << 8 | freq_array_read[1];
+uint16_t CONF_READ_RAIDO_FREQ(uint16_t addr) {
+  uint8_t freq_array_read[2] = {0x00};
+  IapReadArrayByte(addr, freq_array_read);
+  return ((uint16_t)freq_array_read[0]) << 8 | freq_array_read[1];
 }
 
 /**
  * 通过频道号从EEPROM中读取存储的电台频率
  * @param radio_index
  */
-uint16_t CONF_GET_RADIO_INDEX(uint8_t index)
-{
-    uint16_t temp_addr = addr_radio_list + (index * 2);
-    uint16_t freq = CONF_READ_RAIDO_FREQ(temp_addr);
-    // 修改系统频率  tips 只有需要播放时才会通过index读取频率这里直接设置了
-    sys_freq = freq;
-    sys_radio_index = index;
-    return freq;
+uint16_t CONF_GET_FREQ_BY_INDEX(uint8_t index) {
+  uint16_t temp_addr = addr_radio_list + (index * 2);
+  uint16_t freq = CONF_READ_RAIDO_FREQ(temp_addr);
+  // 修改系统频率  tips 只有需要播放时才会通过index读取频率这里直接设置了
+  sys_freq = freq;
+  sys_radio_index = index;
+  return freq;
 }
 
+void CONF_WRITE(void) {
+  if (config_write) {
+    // 清空第0扇区0x0000~0x0200
+    IapEraseSector(addr_vol);
+    // 写入音量
+    IapProgramByte(addr_vol, sys_vol & 0x00FF);
+    // 写入索引
+    IapProgramByte(addr_freq_index, sys_radio_index);
 
-void CONF_WRITE(void)
-{
-        // 暂存数据
-    uint8_t freq_array[2] = {0x00};
-  
-    if (config_write) {
-        // 清空第0扇区0x0000~0x0200
-        IapEraseSector(addr_vol);
-        // 写入音量
-        IapProgramByte(addr_vol, sys_vol & 0x00FF);
+    // 写入休眠模式
+    IapProgramByte(addr_sleep_mode, 0x00 | sys_sleep_mode);
+    // 写入轮询模式
+    IapProgramByte(addr_poll_mode, 0x00 | cycle_in_freq_rssi);
 
-        freq_array[0] = sys_freq >> 8;
-        freq_array[1] = sys_freq;
-        // 写入频率高字节
-        IapProgramByte(addr_freq, freq_array[0]);
-        // 写入频率低字节
-        IapProgramByte(addr_freq + 1, freq_array[1]);
-        // 写入索引
-        IapProgramByte(addr_freq_index, sys_radio_index);
+    config_write = 0;
+    // printf("Config written to EEPROM\n");
+  }
+}
 
-        // 写入休眠模式
-        IapProgramByte(addr_sleep_mode, 0x00 | sys_sleep_mode);
-        // 写入轮询模式
-        IapProgramByte(addr_poll_mode, 0x00 | cycle_in_freq_rssi);
+uint8_t CONF_READ_SPACE(uint8_t band_sel) {
+  return 0x02;
+  // switch (band_sel) {
+  // case 0:
+  //   return 0x00;
+  // case 1:
+  //   return 0x00;
+  // case 2:
+  //   return 0x00;
+  // case 3:
+  //   return 0x02;
+  // case 4:
+  //   return 0x02;
+  // default:
+  //   return 0x00;
+  // }
+}
 
-        config_write=0;
-    }
-    
+uint8_t CONF_READ_BAND(void) {
+  uint8_t h03band = IapReadByte(addr_h03);
+  if (h03band == 0xFF) {
+    return 0x00; // 默认 0 = 87–108 MHz (US/Europe)
+  }
+  return (h03band & 0x1C) >> 2;
 }
 
 /**
  * 清空电台(包括频道号，和频率列表)
  */
-void CONF_RADIO_ERASE(void)
-{
-    IapEraseSector(addr_radio);
-}
-
-/**
- * 追加一个电台
- */
-void CONF_RADIO_PUT(uint8_t index, uint16_t freq)
-{
-    uint16_t temp_addr;
-//    uint8_t freq_array_read[2] = {0x00};
-    uint8_t freq_array[2] = {0x00};
-    freq_array[0] = freq >> 8;
-    freq_array[1] = freq;
-    temp_addr = addr_radio_list + index * 2;
-    IapProgramByte(temp_addr, freq_array[0]);
-    Delay(4);
-    IapProgramByte(temp_addr + 1, freq_array[1]);
-
-//    IapReadArrayByte(temp_addr, freq_array_read);
-
-    // printf("CONF_RADIO_PUT GET %d   %bu\r\n", CONF_READ_RAIDO_FREQ(temp_addr), index);
-}
-
-/**
- * 持久化当前电台（频率和索引）
- * @param freq 要保存的频率
- */
-void CONF_SET_FREQ(uint16_t freq)
-{
-    sys_freq = freq;
-    config_write = 1;
+void CONF_RADIO_ERASE() {
+  IapEraseSector(addr_radio);
+  IapProgramByte(addr_h03, sys_band << 2 | CONF_READ_SPACE(sys_band));
 }
 
 /**
  * 搜台完成,radio_index_max
  * @param 电台总数
  */
-void CONF_SET_INDEX_MAX(uint8_t index)
-{
-    sys_radio_index_max = index;
-    IapProgramByte(addr_radio, index);
+void CONF_WRITE_INDEX_MAX(uint8_t index) {
+  sys_radio_index_max = index;
+  IapProgramByte(addr_radio, index);
 }
 
-bit CONF_SYS_INIT(void)
-{
-    // 从eeprom获取音量并纠正
-    sys_vol = IapReadByte(addr_vol);
-    if (sys_vol < 0 | sys_vol > 15)
-    {
-        sys_vol = 5;
-    }
+/**
+ * 追加一个电台
+ */
+void CONF_RADIO_PUT(uint8_t index, uint16_t freq) {
+  uint16_t temp_addr;
+  uint8_t freq_array[2] = {0x00};
+  freq_array[0] = freq >> 8;
+  freq_array[1] = freq;
+  temp_addr = addr_radio_list + index * 2;
+  IapProgramByte(temp_addr, freq_array[0]);
+  Delay(4);
+  IapProgramByte(temp_addr + 1, freq_array[1]);
+}
 
-    // 从eeprom获取睡眠模式纠正
-    sys_sleep_mode = IapReadByte(addr_sleep_mode) & 0x01;
+uint8_t CONF_SYS_INIT(void) {
+  // 从eeprom获取音量并纠正
+  uint8_t band = IapReadByte(addr_h03);
+  if (band == 0xFF) {
+    sys_band = 0x00; // 重置band
+    return 0x01;
+  }
+  sys_band = (band & 0x1C) >> 2;
+//   printf("init band: %bu\n", sys_band);
 
-    // 从eeprom获取POLL模式纠正
-    cycle_in_freq_rssi = IapReadByte(addr_poll_mode) & 0x01;
+  sys_vol = IapReadByte(addr_vol);
+  if (sys_vol < 0 | sys_vol > 15) {
+    sys_vol = 5;
+  }
+  // 从eeprom获取睡眠模式纠正
+  sys_sleep_mode = IapReadByte(addr_sleep_mode) & 0x01;
+  // 从eeprom获取POLL模式纠正
+  cycle_in_freq_rssi = IapReadByte(addr_poll_mode) & 0x01;
 
-    // 读取电台最大索引（0~254有效），255没搜索过
-    sys_radio_index_max = IapReadByte(addr_radio);
-    if (sys_radio_index_max == 0xFF) // 没有搜过台
-    {
-        return 1; // 需要自动搜台
-    }
+//   printf("init mode: %d - %d\r\n", (int)sys_sleep_mode, (int)cycle_in_freq_rssi);
 
-    // 加载电台配置
-    sys_freq = CONF_READ_RAIDO_FREQ(addr_freq);
-    sys_radio_index = IapReadByte(addr_freq_index);
-    // printf("read config sys_freq %d index %bu\r\n", sys_freq, sys_radio_index);
-    return 0;
+  // 读取电台最大索引（0~254有效），255没搜索过
+  sys_radio_index_max = IapReadByte(addr_radio);
+
+  if (sys_radio_index_max == 0xFF || sys_radio_index_max == 0) // 没有搜过台
+  {
+    return 0x02; // 需要自动搜台
+  }
+
+  // 加载上一次选择的电台索引
+  sys_radio_index = IapReadByte(addr_freq_index);
+  CONF_GET_FREQ_BY_INDEX(sys_radio_index);
+
+//   printf("read config %bu  %d  %bu\r\n", sys_vol, sys_freq, sys_radio_index);
+  return 0;
+}
+
+void CONF_RESET(void) {
+  IapEraseSector(addr_vol);
+  IapEraseSector(addr_radio);
 }
