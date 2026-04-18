@@ -23,7 +23,7 @@ void IapIdle()
 /*----------------------------
 扇区擦除
 ----------------------------*/
-void IapEraseSector(uint16t addr)
+void IapEraseSector(uint16_t addr)
 {
     // EA = 0;
     IAP_CONTR = 0x80; // 使能IAP
@@ -42,9 +42,9 @@ void IapEraseSector(uint16t addr)
  * 读一个字节
  * @param  地址
  */
-uint8t IapReadByte(uint16t addr)
+uint8_t IapReadByte(uint16_t addr)
 {
-    uint8t dat; // 数据缓冲区
+    uint8_t dat; // 数据缓冲区
     // EA = 0;
     IAP_CONTR = 0x80; // 使能IAP
     IAP_TPS = 12;
@@ -60,10 +60,10 @@ uint8t IapReadByte(uint16t addr)
     return dat; // 返回
 }
 
-void IapReadArrayByte(uint16t addr, uint8t *dat)
+void IapReadArrayByte(uint16_t addr, uint8_t *dat)
 {
-    uint8t i;
-    uint16t temp_addr;
+    uint8_t i;
+    uint16_t temp_addr;
     // EA = 0;
 
     IAP_CONTR = 0x80; // 使能IAP
@@ -89,7 +89,7 @@ void IapReadArrayByte(uint16t addr, uint8t *dat)
 /*----------------------------
 写一字节数据到ISP/IAP/EEPROM区域
 ----------------------------*/
-void IapProgramByte(uint16t addr, uint8t dat)
+void IapProgramByte(uint16_t addr, uint8_t dat)
 {
     // EA = 0;
     IAP_CONTR = 0x80; // 使能IAP

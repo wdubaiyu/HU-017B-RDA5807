@@ -3,7 +3,7 @@
 #include "Key.h"
 #include "config/Config.h"
 
-uint8t KeyNum = 0;
+uint8_t KeyNum = 0;
 
 sbit KEY1 = P3 ^ 3; // v+
 sbit KEY2 = P3 ^ 2; // v-
@@ -14,10 +14,10 @@ sbit KEY4 = P3 ^ 5; // f-
 typedef struct
 {
     unsigned int cnt;              // 按键计时
-    uint8t state;           // 当前状态 (0=释放, 1=按下)
-    uint8t lock;            // 锁定标志
-    uint8t in_combo;        // 参与组合按键标志
-    uint8t combo_triggered; // 组合按键已触发标志
+    uint8_t state;           // 当前状态 (0=释放, 1=按下)
+    uint8_t lock;            // 锁定标志
+    uint8_t in_combo;        // 参与组合按键标志
+    uint8_t combo_triggered; // 组合按键已触发标志
 } KeyState;
 
 KeyState keys[4] = {0}; // KEY1, KEY2, KEY3, KEY4
@@ -26,16 +26,16 @@ KeyState keys[4] = {0}; // KEY1, KEY2, KEY3, KEY4
 unsigned int combo_timer = COMBO_TRIGGER_DELAY;
 // 组合按键标志 (按位存储: bit0=KEY1, bit1=KEY2, bit2=KEY3, bit3=KEY4)
 // 组合按键标志
-uint8t combo_flags = 0;
+uint8_t combo_flags = 0;
 
 /**
  * @brief  获取按键键码
  * @param  无
  * @retval 按键键码
  */
-uint8t POP_KEY(void)
+uint8_t POP_KEY(void)
 {
-    uint8t temp = KeyNum;
+    uint8_t temp = KeyNum;
     KeyNum = 0;
     return temp;
 }
@@ -57,14 +57,14 @@ void IO_SET()
 void Key_Loop(void)
 {
     // 所有局部变量在函数开头声明
-    uint8t i;             // 处理第几位的按键
-    uint8t pin_state;     // 当前按键状态
-    uint8t pressed_keys;  // 统计哪些按键参加了组合按键
-    uint8t pressed_count; // 统计几个按键参与了组合按键
-    uint8t key1;
-    uint8t key2;
-    uint8t any_key_released = 0;
-    uint8t still_pressed;
+    uint8_t i;             // 处理第几位的按键
+    uint8_t pin_state;     // 当前按键状态
+    uint8_t pressed_keys;  // 统计哪些按键参加了组合按键
+    uint8_t pressed_count; // 统计几个按键参与了组合按键
+    uint8_t key1;
+    uint8_t key2;
+    uint8_t any_key_released = 0;
+    uint8_t still_pressed;
 
     IO_SET();
 

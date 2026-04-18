@@ -4,16 +4,16 @@
 #include "Config.h"
 #include "EEPROM.h"
 
-uint8t sys_vol = 0x05;
+uint8_t sys_vol = 0x05;
 // 0一段时间后休眠 1一直显示
 bit sys_sleep_mode;
 // 轮询展示freq 和 rssi 开关
 bit cycle_in_freq_rssi = 0;
-uint16t sys_freq = 0x21FC; // 8700
+uint16_t sys_freq = 0x21FC; // 8700
 
 // 当前频率对应电台的序号（最多255）
-uint8t sys_radio_index = 0x00;
-uint8t sys_radio_index_max = 0x00;
+uint8_t sys_radio_index = 0x00;
+uint8_t sys_radio_index_max = 0x00;
 
 bit sys_write_freq_flag = 0;
 bit sys_write_vol_flag = 0;
@@ -24,21 +24,21 @@ bit sys_write_poll_flag = 0;
  * 从EEPROM中读取存储的电台频率
  * @param EEPROM地址
  */
-uint16t CONF_READ_RAIDO_FREQ(uint16t addr)
+uint16_t CONF_READ_RAIDO_FREQ(uint16_t addr)
 {
-    uint8t freq_array_read[2] = {0x00};
+    uint8_t freq_array_read[2] = {0x00};
     IapReadArrayByte(addr, freq_array_read);
-    return ((uint16t)freq_array_read[0]) << 8 | freq_array_read[1];
+    return ((uint16_t)freq_array_read[0]) << 8 | freq_array_read[1];
 }
 
 /**
  * 通过频道号从EEPROM中读取存储的电台频率
  * @param radio_index
  */
-uint16t CONF_GET_RADIO_INDEX(uint8t index)
+uint16_t CONF_GET_RADIO_INDEX(uint8_t index)
 {
-    uint16t temp_addr = addr_radio_list + (index * 2);
-    uint16t freq = CONF_READ_RAIDO_FREQ(temp_addr);
+    uint16_t temp_addr = addr_radio_list + (index * 2);
+    uint16_t freq = CONF_READ_RAIDO_FREQ(temp_addr);
     // 修改系统频率  tips 只有需要播放时才会通过index读取频率这里直接设置了
     sys_freq = freq;
     sys_radio_index = index;
@@ -48,7 +48,7 @@ uint16t CONF_GET_RADIO_INDEX(uint8t index)
 /**
  * 持久化音量
  */
-void CONF_SET_VOL(uint8t vol)
+void CONF_SET_VOL(uint8_t vol)
 {
     IapEraseSector(addr_vol);
     IapProgramByte(addr_vol, vol & 0x00FF);
@@ -58,10 +58,10 @@ void CONF_SET_VOL(uint8t vol)
 /**
  * 持久化当前电台（频率和索引）
  */
-void CONF_SET_FREQ(uint16t freq)
+void CONF_SET_FREQ(uint16_t freq)
 {
     // 暂存数据
-    uint8t freq_array[2] = {0x00};
+    uint8_t freq_array[2] = {0x00};
     freq_array[0] = freq >> 8;
     freq_array[1] = freq;
     // 清空扇区
@@ -120,11 +120,11 @@ void CONF_RADIO_ERASE(void)
 /**
  * 追加一个电台
  */
-void CONF_RADIO_PUT(uint8t index, uint16t freq)
+void CONF_RADIO_PUT(uint8_t index, uint16_t freq)
 {
-    uint16t temp_addr;
-//    uint8t freq_array_read[2] = {0x00};
-    uint8t freq_array[2] = {0x00};
+    uint16_t temp_addr;
+//    uint8_t freq_array_read[2] = {0x00};
+    uint8_t freq_array[2] = {0x00};
     freq_array[0] = freq >> 8;
     freq_array[1] = freq;
     temp_addr = addr_radio_list + index * 2;
@@ -141,7 +141,7 @@ void CONF_RADIO_PUT(uint8t index, uint16t freq)
  * 搜台完成,radio_index_max
  * @param 电台总数
  */
-void CONF_SET_INDEX_MAX(uint8t index)
+void CONF_SET_INDEX_MAX(uint8_t index)
 {
     sys_radio_index_max = index;
     IapProgramByte(addr_radio, index);

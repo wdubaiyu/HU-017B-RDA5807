@@ -11,11 +11,11 @@
 
 // （自动搜台设置==11）
 // （定时关机设置==21）
-uint8t key_function_flag;
+uint8_t key_function_flag;
 
 // 电源状态（0正常，1关机倒计时，2已关机）
-uint8t POWER_STATUS = 0x00;
-uint16t timed_stanby_count;
+uint8_t POWER_STATUS = 0x00;
+uint16_t timed_stanby_count;
 
 // 需要系统写
 bit conf_write_flag;
@@ -28,7 +28,7 @@ void triggerWriteFreq()
 }
 
 // 按键触发功能
-void userInput(uint8t Key_num)
+void userInput(uint8_t Key_num)
 {
 	// 有按键操作时重置睡眠时间
 	LED_RESET_SLEEP_TIME();
@@ -294,7 +294,7 @@ void InitSystem()
 
 void main()
 {
-	uint8t Key_num;
+	uint8_t Key_num;
 	I2C_Init();
 	// UartInit();
 	// printf("UartInit...");
@@ -356,7 +356,7 @@ void main()
 void Timer0_Isr(void) interrupt 1
 {
 
-	uint8t led_type = LED_GET_DISPLY_TYPE();
+	uint8_t led_type = LED_GET_DISPLY_TYPE();
 
 	// 轮询按键
 	Key_Loop();

@@ -4,7 +4,7 @@
 
 
 //,0xC7 -->L11  0x89-->H12
-xdata  uint8t NixieTable[] = {
+xdata  uint8_t NixieTable[] = {
 	0xC0, 0xF9, 0xA4, 0xB0, 0x99,		// (0)0,1,2,3,4
 	0x92, 0x82, 0xF8, 0x80, 0x90, 0x7F, // (5)5,6,7,8,9,点(10)
 	0x88, 0x83, 0xC6, 0xA1, 0x86,		// (11)A,b,C,d,E
@@ -12,27 +12,27 @@ xdata  uint8t NixieTable[] = {
 	0x89, 0xC7, 0x12, 0xC8, 0xAB,		// (21)L,H,S,N,n
 	0xF7, 0xBF};						// (26)_ -
 
-xdata  uint8t NixieTableDp[] = {
+xdata  uint8_t NixieTableDp[] = {
 	0x40, 0x79, 0x24, 0x30, 0x19,
 	0x12, 0x02, 0x78, 0x00, 0x10, 0x7F,
 	0xC7, 0x89};
 
 
 
-uint16t LED_FRE_REAL = 8700;
-uint16t LED_DISPLAY_REC_COUNT = 0x00;
-uint8t LED_DISPLAY_TYPE = 0x06;
-uint8t LED_RSSI = 0x00;
-uint8t LED_SNR = 0x00;
-uint8t LED_TIMED_STANDBY = 0x1E; //默认30分钟
+uint16_t LED_FRE_REAL = 8700;
+uint16_t LED_DISPLAY_REC_COUNT = 0x00;
+uint8_t LED_DISPLAY_TYPE = 0x06;
+uint8_t LED_RSSI = 0x00;
+uint8_t LED_SNR = 0x00;
+uint8_t LED_TIMED_STANDBY = 0x1E; //默认30分钟
 // 手动搜台方向
 bit LED_SEEK_D = 1;
 // 睡眠模式剩余时间
-uint16t LED_SHOW_TIME = 0x1F40; // 统计睡眠模式剩余时间8s 8000
+uint16_t LED_SHOW_TIME = 0x1F40; // 统计睡眠模式剩余时间8s 8000
 
 
 
-void CallNixieTube(uint8t a, b, c, d, dp);
+void CallNixieTube(uint8_t a, b, c, d, dp);
 void IO_Config()
 {
 	// 配置 P1.1, P1.2, P1.6 P1.7为推挽输出（位选 W1-W3）
@@ -47,7 +47,7 @@ void IO_Config()
 /**
  内部使用 根据dpf判断是否需要小数点
 **/
-char getData(uint8t a, dpf)
+char getData(uint8_t a, dpf)
 {
 	if (dpf)
 	{
@@ -73,9 +73,9 @@ void DispaySELLP()
 }
 
 // 显示频率
-void DispayF(uint16t temp)
+void DispayF(uint16_t temp)
 {
-	uint8t NUM_GE, NUM_SHI, NUM_BAI, NUM_DEC;
+	uint8_t NUM_GE, NUM_SHI, NUM_BAI, NUM_DEC;
 	NUM_BAI = temp / 10000;
 	NUM_SHI = (temp % 10000) / 1000;
 	NUM_GE = (temp % 1000) / 100;
@@ -128,7 +128,7 @@ void DispayVl()
 // 显示信号质量
 void DispayRSSI()
 {
-	uint8t NUM_GE, NUM_SHI, NUM_BAI;
+	uint8_t NUM_GE, NUM_SHI, NUM_BAI;
 	NUM_BAI = LED_RSSI / 100;
 	NUM_SHI = (LED_RSSI % 100) / 10;
 	NUM_GE = (LED_RSSI % 10);
@@ -144,7 +144,7 @@ void DispayRSSI()
 
 void DispaySNR()
 {
-	uint8t NUM_GE, NUM_SHI;
+	uint8_t NUM_GE, NUM_SHI;
 	NUM_GE = (LED_SNR % 10);
 	NUM_SHI = (LED_SNR % 100) / 10;
 	CallNixieTube(0x17, 25, NUM_SHI, NUM_GE, 0xFF);
@@ -152,7 +152,7 @@ void DispaySNR()
 
 void DispayTimedStandby()
 {
-	uint8t NUM_GE, NUM_SHI, NUM_BAI;
+	uint8_t NUM_GE, NUM_SHI, NUM_BAI;
 	NUM_BAI = LED_TIMED_STANDBY / 100;
 	NUM_SHI = (LED_TIMED_STANDBY % 100) / 10;
 	NUM_GE = (LED_TIMED_STANDBY % 10);
@@ -192,7 +192,7 @@ void DispayHyphen()
 /**
  * 查询p所在的位置是否有效显示位置
  */
-bit EFFECTIVE_POSTITION(uint8t p, a, b, c, d, sizeOfNixie)
+bit EFFECTIVE_POSTITION(uint8_t p, a, b, c, d, sizeOfNixie)
 {
 	if (p == 0)
 	{
@@ -217,11 +217,11 @@ bit EFFECTIVE_POSTITION(uint8t p, a, b, c, d, sizeOfNixie)
 }
 
 // 数码管显示 内部使用 不能只显示"."
-void CallNixieTube(uint8t a, b, c, d, dp)
+void CallNixieTube(uint8_t a, b, c, d, dp)
 {
 	// 数码管显示位数轮询（0~3）
-	static uint8t LED_POLLING_POSTITION = 0;
-	uint8t sizeOfNixie = sizeof(NixieTable);
+	static uint8_t LED_POLLING_POSTITION = 0;
+	uint8_t sizeOfNixie = sizeof(NixieTable);
 
 	// 获取有效显示位
 	while (!EFFECTIVE_POSTITION(LED_POLLING_POSTITION, a, b, c, d, sizeOfNixie))
@@ -341,7 +341,7 @@ bit Led_Loop()
 	return 0;
 }
 
-void LED_SET_DISPLY_TYPE(uint8t display_type)
+void LED_SET_DISPLY_TYPE(uint8_t display_type)
 {
 	LED_DISPLAY_REC_COUNT = 0x00;
 	if (LED_DISPLAY_TYPE == display_type)
@@ -364,7 +364,7 @@ void LED_SET_DISPLY_TYPE(uint8t display_type)
 	LED_DISPLAY_TYPE = display_type;
 }
 
-uint8t LED_GET_DISPLY_TYPE()
+uint8_t LED_GET_DISPLY_TYPE()
 {
 	return LED_DISPLAY_TYPE;
 }

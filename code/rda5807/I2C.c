@@ -59,7 +59,7 @@ void I2C_End(void)
  * @author HZ12138
  * @date 2022-07-27 08:57:03
  */
-void IIC_Send_ACK(uint8t ack)
+void IIC_Send_ACK(uint8_t ack)
 {
     SDA = ack; // 产生应答电平
     I2C_Delay();
@@ -74,7 +74,7 @@ void IIC_Send_ACK(uint8t ack)
  * @author HZ12138
  * @date 2022-07-27 09:04:28
  */
-uint8t IIC_Get_ACK(void)
+uint8_t IIC_Get_ACK(void)
 {
     bit ret; // 用来接收返回值
     SDA = 1; // 电阻上拉,进入读
@@ -93,10 +93,10 @@ uint8t IIC_Get_ACK(void)
  * @author HZ12138
  * @date 2022-07-27 09:05:14
  */
-uint8t I2C_SendByte(uint8t dat)
+uint8_t I2C_SendByte(uint8_t dat)
 {
     bit ack;
-    uint8t loop = 8; // 必须为一个字节
+    uint8_t loop = 8; // 必须为一个字节
     while (loop--)
     {
         // 高在前低在后
@@ -123,10 +123,10 @@ uint8t I2C_SendByte(uint8t dat)
  * @author HZ12138
  * @date 2022-07-27 09:06:13
  */
-uint8t I2C_ReadByte(uint8t ack)
+uint8_t I2C_ReadByte(uint8_t ack)
 {
-    uint8t loop = 8; // 必须为一个字节
-    uint8t ret = 0;
+    uint8_t loop = 8; // 必须为一个字节
+    uint8_t ret = 0;
     // SDA 设置输入方向
     SDA = 1;
     while (loop--)

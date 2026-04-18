@@ -1,11 +1,16 @@
 #ifndef __EEP_ROM__
 #define __EEP_ROM__
 #include "Config.h"
+//位 (bit) ——8个——> 字节 (Byte) ——1024个——> 千字节 (KB)
+//每个扇区512字节（扇区一起写）   总空间 5K = 5120 字节，
+// 地址值应该是 0x0000 0x0200 0x0400 0x0600 0x0800 0x1000 0x1200 
+// 最后一个地址是 0x13FF (5119)
+
 
 // 每个扇区512字节
 #define addr_vol 0x0000
-// 存放当前频率
 
+// 存放当前频率
 #define addr_freq 0x0200
 // 存放当前index
 #define addr_freq_index 0x0202
@@ -23,27 +28,27 @@
 /**
  * 擦除一个扇区
  */
-void IapEraseSector(uint16t addr);
+void IapEraseSector(uint16_t addr);
 
 /**
  * 读取一个字节
  * @param addr 读取地址
  */
 
-uint8t IapReadByte(uint16t addr);
+uint8_t IapReadByte(uint16_t addr);
 
 /**
  * 读取 指定连续sizeOf(dat)字节
  * @param addr 读取地址
  */
 
-void IapReadArrayByte(uint16t addr, uint8t *dat);
+void IapReadArrayByte(uint16_t addr, uint8_t *dat);
 
 /**
  * 不擦除 写一字节
  * @param addr 写入地址
  * @param dat 8位 一字节数据
  */
-void IapProgramByte(uint16t addr, uint8t dat);
+void IapProgramByte(uint16_t addr, uint8_t dat);
 
 #endif
