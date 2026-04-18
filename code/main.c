@@ -23,7 +23,7 @@ bit rssi_read_flag;
 
 void triggerWriteFreq()
 {
-	sys_write_freq_flag = 1;
+	config_write = 1;
 	conf_write_flag = 1;
 }
 
@@ -170,7 +170,7 @@ void userInput(uint8_t Key_num)
 	if (Key_num == 14)
 	{
 		cycle_in_freq_rssi = ~cycle_in_freq_rssi;
-		sys_write_poll_flag = 1;
+		config_write = 1;
 		LED_SET_DISPLY_TYPE(5);
 		return;
 	}

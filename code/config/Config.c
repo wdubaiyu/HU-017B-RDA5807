@@ -15,10 +15,8 @@ uint16_t sys_freq = 0x21FC; // 8700
 uint8_t sys_radio_index = 0x00;
 uint8_t sys_radio_index_max = 0x00;
 
-bit sys_write_freq_flag = 0;
-bit sys_write_vol_flag = 0;
-bit sys_write_sleep_flag = 0;
-bit sys_write_poll_flag = 0;
+// 配置需要写入标志
+bit config_write = 0;
 
 /**
  * 从EEPROM中读取存储的电台频率
@@ -45,68 +43,35 @@ uint16_t CONF_GET_RADIO_INDEX(uint8_t index)
     return freq;
 }
 
-/**
- * 持久化音量
- */
-void CONF_SET_VOL(uint8_t vol)
-{
-    IapEraseSector(addr_vol);
-    IapProgramByte(addr_vol, vol & 0x00FF);
-    sys_vol = vol & 0x00FF;
-}
-
-/**
- * 持久化当前电台（频率和索引）
- */
-void CONF_SET_FREQ(uint16_t freq)
-{
-    // 暂存数据
-    uint8_t freq_array[2] = {0x00};
-    freq_array[0] = freq >> 8;
-    freq_array[1] = freq;
-    // 清空扇区
-    IapEraseSector(addr_freq);
-    IapProgramByte(addr_freq, freq_array[0]);
-    IapProgramByte(addr_freq + 1, freq_array[1]);
-
-    if (sys_radio_index != 0xFF)
-    {
-        IapProgramByte(addr_freq_index, sys_radio_index);
-    }
-
-    sys_freq = freq;
-}
-
-/**
- * 持久化睡眠模式
- */
-void CONF_SET_SLEEP_POLL()
-{
-    IapEraseSector(addr_sleep_mode);
-    IapProgramByte(addr_sleep_mode, 0x00 | sys_sleep_mode);
-    IapProgramByte(addr_poll_mode, 0x00 | cycle_in_freq_rssi);
-}
 
 void CONF_WRITE(void)
 {
-    if (sys_write_freq_flag)
-    {
-        CONF_SET_FREQ(sys_freq);
-        sys_write_freq_flag = 0;
-    }
+        // 暂存数据
+    uint8_t freq_array[2] = {0x00};
+  
+    if (config_write) {
+        // 清空第0扇区0x0000~0x0200
+        IapEraseSector(addr_vol);
+        // 写入音量
+        IapProgramByte(addr_vol, sys_vol & 0x00FF);
 
-    if (sys_write_vol_flag)
-    {
-        CONF_SET_VOL(sys_vol);
-        sys_write_vol_flag = 0;
-    }
+        freq_array[0] = sys_freq >> 8;
+        freq_array[1] = sys_freq;
+        // 写入频率高字节
+        IapProgramByte(addr_freq, freq_array[0]);
+        // 写入频率低字节
+        IapProgramByte(addr_freq + 1, freq_array[1]);
+        // 写入索引
+        IapProgramByte(addr_freq_index, sys_radio_index);
 
-    if (sys_write_sleep_flag || sys_write_poll_flag)
-    {
-        CONF_SET_SLEEP_POLL();
-        sys_write_sleep_flag = 0;
-        sys_write_poll_flag = 0;
+        // 写入休眠模式
+        IapProgramByte(addr_sleep_mode, 0x00 | sys_sleep_mode);
+        // 写入轮询模式
+        IapProgramByte(addr_poll_mode, 0x00 | cycle_in_freq_rssi);
+
+        config_write=0;
     }
+    
 }
 
 /**
@@ -135,6 +100,16 @@ void CONF_RADIO_PUT(uint8_t index, uint16_t freq)
 //    IapReadArrayByte(temp_addr, freq_array_read);
 
     // printf("CONF_RADIO_PUT GET %d   %bu\r\n", CONF_READ_RAIDO_FREQ(temp_addr), index);
+}
+
+/**
+ * 持久化当前电台（频率和索引）
+ * @param freq 要保存的频率
+ */
+void CONF_SET_FREQ(uint16_t freq)
+{
+    sys_freq = freq;
+    config_write = 1;
 }
 
 /**

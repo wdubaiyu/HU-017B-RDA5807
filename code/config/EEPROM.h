@@ -7,18 +7,21 @@
 // 最后一个地址是 0x13FF (5119)
 
 
-// 每个扇区512字节
+/**
+ * @brief 第一个扇区 0x0000-0x0200 存放动态数据
+ *    最少占用一个字节
+ * 
+ */
+// 存放音量（0-15 uint8_t占用1字节）0x0000
 #define addr_vol 0x0000
-
-// 存放当前频率
-#define addr_freq 0x0200
-// 存放当前index
-#define addr_freq_index 0x0202
-
-// 存放睡眠模式
-#define addr_sleep_mode 0x0400
-// 存放POLL模式
-#define addr_poll_mode 0x0402
+// 存放当前频率 （uint16_t占用2字节）0x0001 ~ 0x0002
+#define addr_freq 0x0001
+// 存放当前index （uint8_t占用1字节） 0x0003
+#define addr_freq_index 0x0003
+// 存放睡眠模式 （1bit 占用 uint8_t占用1字节）
+#define addr_sleep_mode 0x0004
+// 存放POLL模式 （1bit 占用 uint8_t占用1字节）
+#define addr_poll_mode 0x0005
 
 // 存放电台最大数量
 #define addr_radio 0x0600

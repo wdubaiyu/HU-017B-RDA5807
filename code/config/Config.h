@@ -22,10 +22,7 @@ extern bit sys_sleep_mode;
 extern bit cycle_in_freq_rssi;
 
 // 延迟写类型标记
-extern bit sys_write_freq_flag;
-extern bit sys_write_vol_flag;
-extern bit sys_write_sleep_flag;
-extern bit sys_write_poll_flag;
+extern bit config_write;
 
 /**
  * 开机初始化读取配置

@@ -352,13 +352,13 @@ void LED_SET_DISPLY_TYPE(uint8_t display_type)
 	// 需要持久化保存 音量
 	if (display_type == 4)
 	{
-		sys_write_vol_flag = 1;
+		config_write = 1;
 	}
 
 	// 需要持久化保存 睡眠模式
 	if (display_type == 3)
 	{
-		sys_write_sleep_flag = 1;
+		config_write = 1;
 	}
 
 	LED_DISPLAY_TYPE = display_type;
