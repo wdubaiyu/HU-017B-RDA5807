@@ -123,8 +123,7 @@ void RDA5807M_init(void) {
   Delay(50);
   RDA5807M_Write_Reg(
       0x03,
-      0x0012 | ((sys_freq - 8700) / 10)<< 6); // 0x0010(TUNE BAND00 SPACE00)--> 87–108 MHz
-                          // (US/Europe) SPACE 100 kHz  设置ch对应sys_freqMHz
+      0x0012 | ((sys_freq - 8700) / 5)<< 6); // 0x0012(TUNE BAND00 SPACE10)--> 87–108 MHz
   RDA5807M_Write_Reg(0x05, 0x86a0 | sys_vol); // seek SNR 0110  --> 6
   RDA5807M_Write_Reg(0x06, 0x0000);
   RDA5807M_Write_Reg(0x07, 0x5F1A);
