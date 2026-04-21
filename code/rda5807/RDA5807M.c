@@ -341,7 +341,7 @@ void RDA5807M_Search_Automatic() {
   }
   // 保存电台最大索引
   CONF_WRITE_INDEX_MAX(i);
-  // printf("sys_radio_index_max  %bu  \r\n", i);
+  // printf("CONF_WRITE_INDEX_MAX  %bu  \r\n", i);
 
   // //切换到第一个电台
   sys_radio_index = 0;

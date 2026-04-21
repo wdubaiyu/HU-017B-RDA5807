@@ -52,9 +52,8 @@ void CONF_WRITE(void) {
   // 写入休眠模式  // 写入轮询模式
   IapProgramByte(
       addr_mode,
-      sys_sleep_mode ? 0x01 : 0x00 | (cycle_in_freq_rssi ? 0x00 : 0x01 << 1));
+      (sys_sleep_mode ? 0x01 : 0x00) | (cycle_in_freq_rssi ? 0x00 : 0x02));
 
-  // printf("Config written to EEPROM\n");
 }
 
 uint8_t CONF_READ_SPACE(uint8_t band_sel) {
@@ -132,10 +131,9 @@ uint8_t CONF_SYS_INIT(void) {
   // 从eeprom获取睡眠模式纠正
   sys_sleep_mode = (_mode & 0x01);
   // 从eeprom获取POLL模式纠正
-  cycle_in_freq_rssi = _mode & 0x02 ? 0 : 1;
+  cycle_in_freq_rssi = (_mode & 0x02) ? 0 : 1;
 
-  //   printf("init mode: %d - %d\r\n", (int)sys_sleep_mode,
-  //   (int)cycle_in_freq_rssi);
+    printf("init mode: %bu %d  %d\r\n", _mode,(int)sys_sleep_mode,(int)cycle_in_freq_rssi);
 
   // 读取电台最大索引（0~254有效），255没搜索过
   sys_radio_index_max = IapReadByte(addr_radio);
@@ -155,10 +153,9 @@ uint8_t CONF_SYS_INIT(void) {
 }
 
 void CONF_RESET(void) {
-  sys_vol = 5;
-  sys_band = 0;
+  sys_vol = 0x05;
   sys_sleep_mode = 1;
-  cycle_in_freq_rssi = 0;
+  cycle_in_freq_rssi = 1;
   IapEraseSector(addr_vol);
   IapEraseSector(addr_radio);
 }

@@ -349,8 +349,6 @@ void main() {
       userInput(Key_num);
     }
 
-    //    // 保存当前状态
-    //    CONF_WRITE();
   }
 }
 
