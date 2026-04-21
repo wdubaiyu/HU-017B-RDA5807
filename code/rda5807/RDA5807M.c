@@ -348,7 +348,7 @@ void RDA5807M_Search_Automatic() {
   LED_FRE_REAL = sys_freq = CONF_GET_FREQ_BY_INDEX(0);
   RDA5807M_Set_Freq(LED_FRE_REAL);
 
-  config_write = 1;
+  CONF_WRITE();
 }
 
 void RDA5807M_Set_Volume(uint8_t vol) {

@@ -18,8 +18,6 @@ uint16_t sys_freq = 0x21FC; // 8700
 uint8_t sys_radio_index = 0x00;
 uint8_t sys_radio_index_max = 0x00;
 
-// 配置需要写入标志
-bit config_write = 0;
 
 /**
  * 从EEPROM中读取存储的电台频率
@@ -45,7 +43,6 @@ uint16_t CONF_GET_FREQ_BY_INDEX(uint8_t index) {
 }
 
 void CONF_WRITE(void) {
-  if (config_write) {
     // 清空第0扇区0x0000~0x0200
     IapEraseSector(addr_vol);
     // 写入音量
@@ -57,10 +54,7 @@ void CONF_WRITE(void) {
     IapProgramByte(addr_sleep_mode, 0x00 | sys_sleep_mode);
     // 写入轮询模式
     IapProgramByte(addr_poll_mode, 0x00 | cycle_in_freq_rssi);
-
-    config_write = 0;
     // printf("Config written to EEPROM\n");
-  }
 }
 
 uint8_t CONF_READ_SPACE(uint8_t band_sel) {

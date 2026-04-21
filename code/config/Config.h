@@ -22,8 +22,6 @@ extern bit sys_sleep_mode;
 // 轮询显示SNR和RSSI
 extern bit cycle_in_freq_rssi;
 
-// 延迟写类型标记
-extern bit config_write;
 
 /**
  * @brief 复位配置

@@ -17,9 +17,13 @@ uint8_t key_function_flag;
 // 电源状态（0正常，1关机倒计时，2已关机）
 uint8_t POWER_STATUS = 0x00;
 uint16_t timed_stanby_count;
+// 写动态配置(是否需要保存配置到EEPROM) =0x0FD0 时触发写操作，<0x0FD0时计数加一
+uint16_t timed_config_write = 0xFFFF;
 
 bit rssi_read_flag;
 
+//重置计数器为0 从头开始计数
+void trigger_write() { timed_config_write = 0x0000; }
 /**
  * 启动收音函数
  */
@@ -194,7 +198,7 @@ void userInput(uint8_t Key_num) {
   // K12 设置省电模式（一定时间后关闭数码管）
   if (Key_num == 12) {
     LED_CHANGE_SLEEP_MODE();
-    config_write = 1;
+    trigger_write();
     return;
   }
 
@@ -210,7 +214,7 @@ void userInput(uint8_t Key_num) {
   if (Key_num == 14) {
     cycle_in_freq_rssi = ~cycle_in_freq_rssi;
     LED_SET_DISPLY_TYPE(5);
-    config_write = 1;
+    trigger_write();
     return;
   }
 
@@ -247,7 +251,7 @@ void userInput(uint8_t Key_num) {
     // 最大音量15
     if (sys_vol < 15) {
       RDA5807M_Set_Volume(sys_vol + 1);
-      config_write = 1;
+      trigger_write();
     }
     return;
   }
@@ -257,7 +261,7 @@ void userInput(uint8_t Key_num) {
     // 最小音量1
     if (sys_vol > 0) {
       RDA5807M_Set_Volume(sys_vol - 1);
-      config_write = 1;
+      trigger_write();
     }
     return;
   }
@@ -273,10 +277,10 @@ void userInput(uint8_t Key_num) {
     } else {
       ++sys_radio_index;
     }
-    
+
     LED_FRE_REAL = CONF_GET_FREQ_BY_INDEX(sys_radio_index);
     RDA5807M_Set_Freq(LED_FRE_REAL);
-    config_write = 1;
+    trigger_write();
     // printf("sys_freq  %bu  %d\r\n", sys_radio_index, sys_freq);
     return;
   }
@@ -294,7 +298,7 @@ void userInput(uint8_t Key_num) {
 
     LED_FRE_REAL = CONF_GET_FREQ_BY_INDEX(sys_radio_index);
     RDA5807M_Set_Freq(LED_FRE_REAL);
-    config_write = 1;
+    trigger_write();
     // printf("sys_freq  %bu  %d\r\n", sys_radio_index, sys_freq);
     return;
   }
@@ -345,14 +349,23 @@ void main() {
       userInput(Key_num);
     }
 
-    // 保存当前状态
-    CONF_WRITE();
+    //    // 保存当前状态
+    //    CONF_WRITE();
   }
 }
 
 void Timer0_Isr(void) interrupt 1 {
 
   uint8_t led_type = LED_GET_DISPLY_TYPE();
+
+  // 写动态配置计数
+  if (timed_config_write < 0x0FD0) {
+    timed_config_write += 1;
+  } else if (timed_config_write == 0x0FD0) {
+    // 已处理写配置
+    CONF_WRITE();
+    timed_config_write = 0xFFFF;
+  }
 
   // 轮询按键
   Key_Loop();
