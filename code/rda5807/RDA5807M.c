@@ -136,7 +136,7 @@ void RDA5807M_init(void) {
   uint16_t h03 = 0x0000;
   uint16_t h07 = 0x5F1A;
   uint8_t band_sel = CONF_READ_BAND();
-  uint8_t space_sel = CONF_READ_SPACE(band_sel);
+  uint8_t space_sel = CONF_READ_SPACE();
   // printf("RDA5807M_init %bu  %bu \r\n", band_sel, space_sel);
 
   RDA5807M_Write_Reg(0x02, 0x0003); // reset

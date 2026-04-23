@@ -44,7 +44,7 @@ uint8_t CONF_SYS_INIT(void);
     3 = 25KHz 
  * @return uint8_t 
  */
-uint8_t CONF_READ_SPACE(uint8_t band_sel);
+uint8_t CONF_READ_SPACE();
 
 /**
  * @brief 读取band

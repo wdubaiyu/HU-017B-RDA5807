@@ -56,7 +56,7 @@ void CONF_WRITE(void) {
 
 }
 
-uint8_t CONF_READ_SPACE(uint8_t band_sel) {
+uint8_t CONF_READ_SPACE() {
   return 0x02;
   // switch (band_sel) {
   // case 0:
@@ -87,7 +87,7 @@ uint8_t CONF_READ_BAND(void) {
  */
 void CONF_RADIO_ERASE() {
   IapEraseSector(addr_radio);
-  IapProgramByte(addr_h03, sys_band << 2 | CONF_READ_SPACE(sys_band));
+  IapProgramByte(addr_h03, sys_band << 2 | CONF_READ_SPACE());
 }
 
 /**
