@@ -2,7 +2,6 @@
 
 #include <intrins.h>
 #include "EEPROM.H"
-#include "Delay.H"
 
 #define CMD_READ 1    // IAP字节读命令
 #define CMD_PROGRAM 2 // IAP字节编程命令
